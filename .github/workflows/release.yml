@@ -47,14 +47,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install GitHub CLI
-        if: steps.check_release.outcome == 'success'
         run: sudo apt-get install -y gh
 
       - name: Create release
-        if: steps.check_release.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LATEST_TAG: ${{ env.LATEST_TAG }}
         run: |
-          gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
           gh release create $LATEST_TAG --generate-notes --title "Release $LATEST_TAG" --notes ""
