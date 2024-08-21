@@ -37,23 +37,23 @@ jobs:
         run: |
           if [ -z "${{ env.LATEST_TAG }}" ]; then
             echo "No latest tag found, skipping release."
-            exit 0
-          fi
-          if gh release view ${{ env.LATEST_TAG }} >/dev/null 2>&1; then
+            echo "::set-output name=release_exists::false"
+          elif gh release view ${{ env.LATEST_TAG }} >/dev/null 2>&1; then
             echo "Release already exists for tag ${{ env.LATEST_TAG }}. Exiting."
-            exit 0  # 正常終了
+            echo "::set-output name=release_exists::true"
           else
             echo "No release found for tag ${{ env.LATEST_TAG }}. A new release will be created."
+            echo "::set-output name=release_exists::false"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install GitHub CLI
-        if: always() # Check release が成功した場合にのみ実行されるように設定
+        if: steps.check_release.outputs.release_exists == 'false'
         run: sudo apt-get install -y gh
 
       - name: Create release
-        if: steps.check_release.outcome == 'success' # Check release 成功時のみ実行
+        if: steps.check_release.outputs.release_exists == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LATEST_TAG: ${{ env.LATEST_TAG }}
