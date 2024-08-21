@@ -54,4 +54,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LATEST_TAG: ${{ env.LATEST_TAG }}
         run: |
-          gh release create $LATEST_TAG --generate-notes --title "Release $LATEST_TAG" --notes ""
+          gh release create $LATEST_TAG --tag $LATEST_TAG --generate-notes --title "Release $LATEST_TAG" --notes ""
