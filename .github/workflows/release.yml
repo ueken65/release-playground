@@ -13,18 +13,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Fetch all tags
+        run: git fetch --tags
+
       - name: Set up Git
         run: git config --global --add safe.directory /github/workspace
 
       - name: Get latest tag
         id: get_tag
         run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            LATEST_TAG=$(git describe --tags --abbrev=0)
+            echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          else
+            echo "No tags found."
+            echo "LATEST_TAG=" >> $GITHUB_ENV
+          fi
 
       - name: Check if release exists
         id: check_release
         run: |
+          if [ -z "${{ env.LATEST_TAG }}" ]; then
+            echo "No latest tag found, skipping release."
+            exit 0
+          fi
           if gh release view ${{ env.LATEST_TAG }} >/dev/null 2>&1; then
             echo "Release already exists for tag ${{ env.LATEST_TAG }}"
             exit 0
@@ -35,6 +47,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install GitHub CLI
+        if: steps.check_release.outcome == 'success'
         run: sudo apt-get install -y gh
 
       - name: Create release
@@ -44,4 +57,4 @@ jobs:
           LATEST_TAG: ${{ env.LATEST_TAG }}
         run: |
           gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-          gh release create $LATEST_TAG --generate-notes --title "$LATEST_TAG" --notes ""
+          gh release create $LATEST_TAG --generate-notes --title "Release $LATEST_TAG" --notes ""
