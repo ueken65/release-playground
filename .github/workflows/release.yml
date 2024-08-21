@@ -40,8 +40,8 @@ jobs:
             exit 0
           fi
           if gh release view ${{ env.LATEST_TAG }} >/dev/null 2>&1; then
-            echo "Release already exists for tag ${{ env.LATEST_TAG }}"
-            exit 0
+            echo "Release already exists for tag ${{ env.LATEST_TAG }}. Exiting."
+            exit 0  # 正常終了
           else
             echo "No release found for tag ${{ env.LATEST_TAG }}. A new release will be created."
           fi
@@ -49,9 +49,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install GitHub CLI
+        if: always() # Check release が成功した場合にのみ実行されるように設定
         run: sudo apt-get install -y gh
 
       - name: Create release
+        if: steps.check_release.outcome == 'success' # Check release 成功時のみ実行
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LATEST_TAG: ${{ env.LATEST_TAG }}
