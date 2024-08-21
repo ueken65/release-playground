@@ -1,0 +1,32 @@
+openapi: 3.0.2
+x-stoplight:
+  id: mhysnt36p7jg3
+info:
+  title: OAS mobile
+  description: モバイルアプリで利用するAPI
+  version: 2.0.0
+servers:
+  - url: 'http://localhost:50100/api/app/v2'
+    description: development
+paths:
+  /home:
+    get:
+      summary: test
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  image_url:
+                    type: string
+                  link_url:
+                    type: string
+                required:
+                  - image_url
+                  - link_url
+      operationId: test
