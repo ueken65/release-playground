@@ -14,7 +14,8 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Fetch all tags
-        run: git fetch --tags
+        run: |
+          git fetch --tags --force
 
       - name: Set up Git
         run: git config --global --add safe.directory /github/workspace
@@ -22,12 +23,13 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
-            LATEST_TAG=$(git describe --tags --abbrev=0)
-            echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
-          else
+          LATEST_TAG=$(git tag --sort=-creatordate | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
             echo "No tags found."
             echo "LATEST_TAG=" >> $GITHUB_ENV
+          else
+            echo "Found latest tag: $LATEST_TAG"
+            echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
           fi
 
       - name: Check if release exists
@@ -54,4 +56,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LATEST_TAG: ${{ env.LATEST_TAG }}
         run: |
-          gh release create $LATEST_TAG --tag $LATEST_TAG --generate-notes --title "Release $LATEST_TAG" --notes ""
+          gh release create $LATEST_TAG --generate-notes --title "Release $LATEST_TAG" --notes ""
