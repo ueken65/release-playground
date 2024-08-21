@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - "*.*.*" # タグが `X.Y.Z` の形式にマッチする場合にトリガー
+    branches:
+      - main
 
 jobs:
   create_release:
