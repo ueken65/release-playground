@@ -24,13 +24,7 @@ jobs:
         id: get_tag
         run: |
           LATEST_TAG=$(git tag --sort=-creatordate | head -n 1)
-          if [ -z "$LATEST_TAG" ]; then
-            echo "No tags found."
-            echo "LATEST_TAG=" >> $GITHUB_ENV
-          else
-            echo "Found latest tag: $LATEST_TAG"
-            echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
-          fi
+          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
 
       - name: Check if release exists
         id: check_release
