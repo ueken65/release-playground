@@ -29,14 +29,11 @@ jobs:
       - name: Check if release exists
         id: check_release
         run: |
-          if [ -z "${{ env.LATEST_TAG }}" ]; then
-            echo "No latest tag found, skipping release."
-            echo "::set-output name=release_exists::false"
-          elif gh release view ${{ env.LATEST_TAG }} >/dev/null 2>&1; then
-            echo "Release already exists for tag ${{ env.LATEST_TAG }}. Exiting."
+          if gh release view ${{ env.LATEST_TAG }} >/dev/null 2>&1; then
+            echo "${{ env.LATEST_TAG }} の Release はすでに存在しているため Release の作成をスキップします"
             echo "::set-output name=release_exists::true"
           else
-            echo "No release found for tag ${{ env.LATEST_TAG }}. A new release will be created."
+            echo "${{ env.LATEST_TAG }} の Release はまだ存在しないため Release を作成します"
             echo "::set-output name=release_exists::false"
           fi
         env:
