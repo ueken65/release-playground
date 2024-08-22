@@ -22,3 +22,5 @@ sed -i '' -e "s/^  version: .*/  version: $version/" openapi.yaml
 git add openapi.yaml
 git commit -m "version $version"
 git tag $version
+git push origin head
+git push origin $version
