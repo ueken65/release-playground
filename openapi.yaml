@@ -4,7 +4,7 @@ x-stoplight:
 info:
   title: OAS mobile
   description: モバイルアプリで利用するAPI
-  version: 2.2.5
+  version: 2.2.6
 servers:
   - url: 'http://localhost:50100/api/app/v2'
     description: development
