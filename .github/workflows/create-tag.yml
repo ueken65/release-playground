@@ -15,18 +15,23 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
+      - name: Fetch and checkout PR head
+        run: |
+          git fetch origin ${{ github.head_ref }}
+          git checkout $GITHUB_SHA
+
       - name: Debug git diff output
         run: |
+          # Show what branches are available and their HEAD positions
+          git branch -a -v
+          # Show the diff for debugging
           git diff origin/${{ github.event.pull_request.base.ref }} $GITHUB_SHA -- openapi.yaml
 
       - name: Check for version changes in openapi.yaml and extract version
         id: extract_version
         run: |
-          # Check out the merged commit directly using GITHUB_SHA
-          git checkout ${{ github.sha }}
-
           # Check if the version line in openapi.yaml has changed between the base and the current commit
-          if git diff origin/${{ github.event.pull_request.base.ref }} $GITHUB_SHA -- openapi.yaml | grep -E '^\+  version:|^-  version:'; then
+          if git diff origin/${{ github.event.pull_request.base.ref }} $GITHUB_SHA -- openapi.yaml | grep -E '^\+.*version:|^-.*version:'; then
             # Extract the new version number from openapi.yaml
             version=$(grep '^  version:' openapi.yaml | sed 's/version: //')
             echo "custom_tag=$version" >> $GITHUB_OUTPUT
