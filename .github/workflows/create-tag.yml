@@ -38,3 +38,4 @@ jobs:
         with:
           custom_tag: ${{ steps.extract_version.outputs.version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix:
