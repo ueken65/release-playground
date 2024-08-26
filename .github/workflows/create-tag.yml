@@ -1,4 +1,4 @@
-name: Create Tag and Release
+name: Create Tag if Not Exists
 
 on:
   pull_request:
@@ -6,38 +6,35 @@ on:
       - closed
 
 jobs:
-  create:
+  create_tag_if_not_exists:
     if: startsWith(github.head_ref, 'release/') != true && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout base branch
+      - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
 
-      - name: Fetch base and head branches
-        run: |
-          git fetch origin ${{ github.event.pull_request.base.ref }}:base-branch
-          git fetch origin ${{ github.event.pull_request.head.ref }}:head-branch
-
-      - name: Check for version changes in openapi.yaml and extract version
+      - name: Extract version from openapi.yaml
         id: extract_version
         run: |
-          # Check if the version line in openapi.yaml has changed between the base and head branches
-          if git diff base-branch head-branch -- openapi.yaml | grep -E '^\+.*version:|^-.*version:'; then
-            # Extract the new version number from openapi.yaml
-            version=$(grep '^  version:' openapi.yaml | sed 's/version: //')
-            echo "custom_tag=$version" >> $GITHUB_OUTPUT
-          else
-            echo "openapi.yaml のバージョン部分に変更がありません。アクションを終了します。"
+          # Extract the version number from openapi.yaml
+          version=$(grep '^  version:' openapi.yaml | sed 's/version: //')
+          echo "version=$version" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          # Check if the extracted version tag already exists in the repository
+          if git rev-parse "refs/tags/${{ steps.extract_version.outputs.version }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.extract_version.outputs.version }} already exists. Exiting..."
             exit 0
           fi
         shell: bash
 
       - name: Create a tag
+        if: steps.check_tag.outputs.version == ''
         id: tag_version
-        if: steps.extract_version.outputs.custom_tag != ''
         uses: mathieudutour/github-tag-action@v6.1
         with:
-          custom_tag: ${{ steps.extract_version.outputs.custom_tag }}
+          custom_tag: ${{ steps.extract_version.outputs.version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
