@@ -1,0 +1,33 @@
+name: Create Tag and Release
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  create:
+    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a tag string
+        id: extract_tag
+        run: echo "custom_tag=$(echo '${{ github.event.pull_request.head.ref }}' | sed 's/release\///')" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Create a tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          custom_tag: ${{ steps.extract_tag.outputs.custom_tag }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install -y gh
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_TAG: ${{ steps.extract_tag.outputs.custom_tag }}
+        run: |
+          gh release create $LATEST_TAG --generate-notes --title "Release $LATEST_TAG"
