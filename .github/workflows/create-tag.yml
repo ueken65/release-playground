@@ -10,15 +10,19 @@ jobs:
     if: startsWith(github.head_ref, 'release/') != true && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout base branch
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Check for version changes in openapi.yaml and extract version
         id: extract_version
         run: |
-          git fetch --all
-          # Check if the version line in openapi.yaml has changed between the base and head of the PR
-          if git diff origin/${{ github.event.pull_request.base.ref }}..origin/${{ github.event.pull_request.head.ref }} -- openapi.yaml | grep -E '^\+  version:|^-  version:'; then
+          # Check out the merged commit directly using GITHUB_SHA
+          git checkout ${{ github.sha }}
+
+          # Check if the version line in openapi.yaml has changed between the base and the current commit
+          if git diff origin/${{ github.event.pull_request.base.ref }} $GITHUB_SHA -- openapi.yaml | grep -E '^\+  version:|^-  version:'; then
             # Extract the new version number from openapi.yaml
             version=$(grep '^  version:' openapi.yaml | sed 's/version: //')
             echo "custom_tag=$version" >> $GITHUB_OUTPUT
@@ -29,6 +33,7 @@ jobs:
         shell: bash
 
       - name: Create a tag
+        id: tag_version
         if: steps.extract_version.outputs.custom_tag != ''
         uses: mathieudutour/github-tag-action@v6.1
         with:
