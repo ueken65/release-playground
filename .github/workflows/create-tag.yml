@@ -15,6 +15,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
+      - name: Debug git diff output
+        run: |
+          git diff origin/${{ github.event.pull_request.base.ref }} $GITHUB_SHA -- openapi.yaml
+
       - name: Check for version changes in openapi.yaml and extract version
         id: extract_version
         run: |
