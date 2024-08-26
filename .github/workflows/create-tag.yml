@@ -21,18 +21,7 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Check if tag exists
-        id: check_tag
-        run: |
-          # Check if the extracted version tag already exists in the repository
-          if git rev-parse "refs/tags/${{ steps.extract_version.outputs.version }}" >/dev/null 2>&1; then
-            echo "Tag ${{ steps.extract_version.outputs.version }} already exists. Exiting..."
-            exit 0
-          fi
-        shell: bash
-
       - name: Create a tag
-        if: steps.check_tag.outputs.version == ''
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.1
         with:
