@@ -22,6 +22,9 @@ jobs:
           custom_tag: ${{ steps.extract_tag.outputs.custom_tag }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Git
         run: git config --global --add safe.directory /github/workspace
 
